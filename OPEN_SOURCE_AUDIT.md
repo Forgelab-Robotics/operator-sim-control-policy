@@ -25,8 +25,8 @@ established `operator-*` publication model (reference:
   (untracked `.venv/`, caches ignored).
 - History blob scan — trivially clean: the public repository starts from a
   fresh initial commit; no prior internal history is carried.
-- `git grep -E 'gitlab\.ex-ai\.cn|meta-emt|/home/|/Users/'` — no matches on the
-  publishable tree (CI enforces this on every push).
+- Internal host, internal path, and credential-pattern scan of the publishable
+  tree (the check enforced by the CI `test` job) — no matches.
 - Largest tracked file is well under the 100 MiB GitHub limit; `dist/`,
   `build/`, and virtual environments are gitignored and never published.
 
