@@ -1,0 +1,46 @@
+[project]
+name = "sim-control-policy-node"
+version = "0.1.2"
+description = "Standalone Forge policy node exposing sim.control (robot info query + scene reset action)."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "Apache-2.0"
+authors = [
+    { name = "X-ERA" }
+]
+dependencies = [
+    "dora-rs==0.4.1",
+    "forge-msgs==1.0.1",
+    "pyarrow>=15",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+forge-sim-control-policy = "sim_control_policy_node.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.14.0",
+]
+build = [
+    "pyinstaller>=6.18.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.8.17,<0.9.0"]
+build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+extend-exclude = ["src/forge_tool"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+# The package init prepends the vendored forge_tool source path before imports.
+"src/sim_control_policy_node/__init__.py" = ["E402"]
