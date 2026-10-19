@@ -73,7 +73,7 @@ jobs:
           test "$(tar -tzf "${archive}")" = "sim_control_policy"
           sha256sum --check "${archive}.sha256"
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: sim-control-policy-v${{ inputs.version }}-ubuntu20.04-x86_64
           path: |
