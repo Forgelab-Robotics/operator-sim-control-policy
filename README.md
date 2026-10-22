@@ -1,37 +1,39 @@
 # Sim Control Policy Node
 
+[English](README.md) | [简体中文](README_zh.md)
+
 Standalone Forge Tool policy node that exposes simulation-scene control for the
 `robot-control-sim` skill: a **robot metadata query** and a **scene reset
 action with deferred re-home** on the `sim.control` endpoint.
 
-## Node、Endpoint 与 Tool API / Capability summary
+## Node, Endpoint and Tool API
 
-| 项目 | 当前实现 |
+| Item | Current implementation |
 | --- | --- |
-| 生产 Node | 1：`sim_control_policy`；源码命令 `forge-sim-control-policy`，打包入口 `dist/sim_control_policy` |
-| Tool 接入方式 | Dora `ToolMessage` provider；通过 Gateway 暴露调用入口 |
-| 直接 HTTP Tool API | 0；本 Node 不监听 HTTP，调用地址属于 Gateway |
-| Endpoint 数 | 1：`sim.control` |
-| operation 数 | 2：`get_robot_info`（Query）、`reset`（Action，不可取消、可查状态；各自最大并发 1） |
-| Gateway Tool 数 | 由 `tools.specs` 决定；robot-control-sim 为本 Endpoint 配置 2 个 Tool，见下表 |
+| Production Nodes | 1: `sim_control_policy`; source command `forge-sim-control-policy`, packaged entrypoint `dist/sim_control_policy` |
+| Tool integration | Dora `ToolMessage` provider; caller-facing access through Gateway |
+| Direct HTTP Tool API | 0; this Node does not listen on HTTP; Gateway owns the invocation URL |
+| Endpoints | 1: `sim.control` |
+| Operations | 2: `get_robot_info` (Query), `reset` (Action, not cancellable, status supported; each has maximum concurrency 1) |
+| Gateway Tools | Deployment-defined in `tools.specs`; robot-control-sim binds 2 Tools to this Endpoint, listed below |
 
-| Tool ID（robot-control-sim 配置） | Endpoint / operation | provider Node |
+| Tool ID (robot-control-sim configuration) | Endpoint / operation | Provider Node |
 | --- | --- | --- |
 | `sim.get_robot_info` | `sim.control / get_robot_info` | `sim_control_policy` |
 | `sim.reset` | `sim.control / reset` | `sim_control_policy` |
 
-`reset` 经 `sim_command` 复位场景；配置 re-home 时，本 Node 同时作为 Tool caller，
-经 `tool_request/tool_response` 调用 Gateway 中已配置的 Motion/Gripper Tool。
-这些被调用的 operation 属于其他 provider，不能计入本仓库的 Endpoint/operation 数。
-ToolSpec 的 `implementation_id` 是部署绑定标识，可不同于包名或 Node ID；以实际 profile 为准。
+`reset` resets the scene through `sim_command`. With re-home configured, this Node is also a Tool caller:
+it invokes Gateway-configured Motion/Gripper Tools over `tool_request/tool_response`.
+Those operations belong to other providers and are excluded from this repository's Endpoint/operation counts.
+ToolSpec `implementation_id` is a deployment binding identifier and may differ from the package or Node name; use the actual profile.
 
-完整契约见 [TOOL_CONTRACTS.md](TOOL_CONTRACTS.md)，descriptor 见
-[info.py](src/sim_control_policy_node/info.py)，reset 编排见
-[control.py](src/sim_control_policy_node/control.py)。
+Complete contract: [TOOL_CONTRACTS.md](TOOL_CONTRACTS.md). Descriptor:
+[info.py](src/sim_control_policy_node/info.py). Reset orchestration:
+[control.py](src/sim_control_policy_node/control.py).
 
-兼容性：当前依赖声明为 `dora-rs==0.4.1`、`forge-msgs==1.0.1`；以 [pyproject.toml](pyproject.toml) 与 [uv.lock](uv.lock) 为准。 Tool 协议实现为仓库内 vendored 代码。 这些声明不构成跨版本互操作保证；使用制品时还需核对 build revision 和 Skill lock。
+Compatibility: current dependency declarations are `dora-rs==0.4.1`, `forge-msgs==1.0.1`. See [pyproject.toml](pyproject.toml) and [uv.lock](uv.lock). The Tool protocol implementation is vendored in this repository. These declarations do not guarantee cross-version interoperability; also check the build revision and Skill lock when using artifacts.
 
-后续修改 Node 入口、Endpoint 或 Tool API 时，请同步更新本节及对应配置/契约，遵循 [Node README 规范](https://github.com/PhyAgentOS/forge/blob/master/CONTRIBUTING.md#node-readme-contract)。
+Changes to Node entrypoints, Endpoints or Tool APIs must update this section and the associated configuration/contracts. Follow the [Node README contract](https://github.com/PhyAgentOS/forge/blob/master/CONTRIBUTING.md#node-readme-contract).
 
 ## Tool contracts
 
