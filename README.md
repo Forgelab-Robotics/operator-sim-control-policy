@@ -1,8 +1,39 @@
 # Sim Control Policy Node
 
+[English](README.md) | [简体中文](README_zh.md)
+
 Standalone Forge Tool policy node that exposes simulation-scene control for the
 `robot-control-sim` skill: a **robot metadata query** and a **scene reset
 action with deferred re-home** on the `sim.control` endpoint.
+
+## Node, Endpoint and Tool API
+
+| Item | Current implementation |
+| --- | --- |
+| Production Nodes | 1: `sim_control_policy`; source command `forge-sim-control-policy`, packaged entrypoint `dist/sim_control_policy` |
+| Tool integration | Dora `ToolMessage` provider; caller-facing access through Gateway |
+| Direct HTTP Tool API | 0; this Node does not listen on HTTP; Gateway owns the invocation URL |
+| Endpoints | 1: `sim.control` |
+| Operations | 2: `get_robot_info` (Query), `reset` (Action, not cancellable, status supported; each has maximum concurrency 1) |
+| Gateway Tools | Deployment-defined in `tools.specs`; robot-control-sim binds 2 Tools to this Endpoint, listed below |
+
+| Tool ID (robot-control-sim configuration) | Endpoint / operation | Provider Node |
+| --- | --- | --- |
+| `sim.get_robot_info` | `sim.control / get_robot_info` | `sim_control_policy` |
+| `sim.reset` | `sim.control / reset` | `sim_control_policy` |
+
+`reset` resets the scene through `sim_command`. With re-home configured, this Node is also a Tool caller:
+it invokes Gateway-configured Motion/Gripper Tools over `tool_request/tool_response`.
+Those operations belong to other providers and are excluded from this repository's Endpoint/operation counts.
+ToolSpec `implementation_id` is a deployment binding identifier and may differ from the package or Node name; use the actual profile.
+
+Complete contract: [TOOL_CONTRACTS.md](TOOL_CONTRACTS.md). Descriptor:
+[info.py](src/sim_control_policy_node/info.py). Reset orchestration:
+[control.py](src/sim_control_policy_node/control.py).
+
+Compatibility: current dependency declarations are `dora-rs==0.4.1`, `forge-msgs==1.0.1`. See [pyproject.toml](pyproject.toml) and [uv.lock](uv.lock). The Tool protocol implementation is vendored in this repository. These declarations do not guarantee cross-version interoperability; also check the build revision and Skill lock when using artifacts.
+
+Changes to Node entrypoints, Endpoints or Tool APIs must update this section and the associated configuration/contracts. Follow the [Node README contract](https://github.com/PhyAgentOS/forge/blob/master/CONTRIBUTING.md#node-readme-contract).
 
 ## Tool contracts
 
